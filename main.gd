@@ -24,6 +24,7 @@ var shock_r := 0.0
 var flash := 0.0
 
 var bg: Texture2D = preload("res://assets/background.png")
+var enemy_tex: Texture2D = preload("res://assets/enemy.png")
 func _ready() -> void:
 	randomize()
 	center = get_viewport_rect().size / 2.0
@@ -99,7 +100,7 @@ func update_game(delta: float) -> void:
 			# laserul distruge inamicii prin care trece
 			for i in range(enemies.size() - 1, -1, -1):
 				var epos: Vector2 = center + Vector2.from_angle(enemies[i]["angle"]) * enemies[i]["dist"]
-				if b["pos"].distance_to(epos) < 18.0:
+				if b["pos"].distance_to(epos) < 27.0:
 					enemies.remove_at(i)
 					score += 10
 			if d.length() > 800.0:
@@ -167,13 +168,15 @@ func _draw() -> void:
 
 	# inamici (romburi magenta)
 	for e in enemies:
-		var p: Vector2 = center + Vector2.from_angle(e["angle"]) * e["dist"]
-		var col := Color(1.0, 0.2, 0.8)
-		if e["stun"] > 0.0:
-			col = Color(0.5, 0.5, 0.5)
-		draw_colored_polygon(PackedVector2Array([
-			p + Vector2(0, -16), p + Vector2(14, 0),
-			p + Vector2(0, 16), p + Vector2(-14, 0)]), col)
+			var p: Vector2 = center + Vector2.from_angle(e["angle"]) * e["dist"]
+			var tint := Color.WHITE
+			if e["stun"] > 0.0:
+				tint = Color(0.5, 0.5, 0.5)   # gri cand e amortit de unda de soc
+			# rotim nava cu fata spre jucator
+			var ang: float = (center - p).angle() - PI / 2.0
+			draw_set_transform(p, ang, Vector2(1.5,1.5))
+			draw_texture(enemy_tex, -enemy_tex.get_size() / 2.0, tint)
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)   # resetam, altfel se strica restul desenului
 
 	# proiectile
 	for b in bullets:
