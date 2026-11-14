@@ -24,11 +24,17 @@ var questions = [
 ]
 
 var current_question = 0
+var time_left := 10.0
+var is_answering := false
+
+var dim: ColorRect
+var timer_bar: ProgressBar
 
 func _ready() -> void:
-	# IMPORTANT: Permite acestui meniu să funcționeze chiar și când jocul este pus pe pauză!
+	# Permite acestui meniu să funcționeze chiar și când jocul este pus pe pauză
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	stilizeaza_ui()  
+	stilizeaza_ui()
+	
 	submit_button.pressed.connect(check_answer)
 	answer_input.text_submitted.connect(_on_text_submitted)
 	revive_button.pressed.connect(_on_revive_pressed)
@@ -37,38 +43,57 @@ func _ready() -> void:
 	questions.shuffle()
 	ascunde_tot()
 
+func _process(delta: float) -> void:
+	if is_answering:
+		time_left -= delta
+		timer_bar.value = time_left
+		if time_left <= 0.0:
+			is_answering = false
+			timp_expirat()
+
 func ascunde_tot() -> void:
+	is_answering = false
 	if dim:
-		dim.hide()
+		dim.get_parent().hide()
+	if timer_bar:
+		timer_bar.hide()
 	question_label.hide()
 	answer_input.hide()
 	submit_button.hide()
 	revive_button.hide()
 	game_over_button.hide()
 
+
 # 1. Această funcție se apelează din main.gd când moare jucătorul
 func arata_optiune_bounce_back() -> void:
-	get_tree().paused = true # Punem inamicii pe pauză cât timp jucătorul alege
+	get_tree().paused = true
+	dim.get_parent().show()
 	dim.show()
 	question_label.text = "The shield was destroyed. What do you choose?"
 	question_label.show()
 	revive_button.show()
 	game_over_button.show()
 	
+	timer_bar.hide()
 	answer_input.hide()
 	submit_button.hide()
+
 
 # 2. Jucătorul a ales să răspundă la o întrebare
 func _on_revive_pressed() -> void:
 	revive_button.hide()
 	game_over_button.hide()
 	
-	# Afișăm o singură întrebare
+	time_left = 10.0
+	timer_bar.value = 10.0
+	timer_bar.show()
+	
 	question_label.text = questions[current_question]["q"]
 	answer_input.text = ""
 	answer_input.show()
 	submit_button.show()
 	answer_input.grab_focus()
+	is_answering = true
 
 # 3. Jucătorul a renunțat
 func _on_game_over_pressed() -> void:
@@ -79,14 +104,25 @@ func _on_game_over_pressed() -> void:
 func _on_text_submitted(_new_text: String) -> void:
 	check_answer()
 
+func timp_expirat() -> void:
+	question_label.text = "TIME'S UP!\nGAME OVER"
+	answer_input.hide()
+	submit_button.hide()
+	timer_bar.hide()
+	
+	await get_tree().create_timer(2.0).timeout
+	ascunde_tot()
+	get_tree().paused = false
+	joc_terminat_definitiv.emit()
+
 func check_answer() -> void:
-	if answer_input.text.strip_edges() == "":
+	if not is_answering or answer_input.text.strip_edges() == "":
 		return
 		
+	is_answering = false
 	var player_answer = answer_input.text.strip_edges().to_lower()
 	var correct_answer = questions[current_question]["answer"].to_lower()
 	
-	# Pregătim următoarea întrebare pentru data viitoare când moare
 	current_question += 1
 	if current_question >= questions.size():
 		current_question = 0
@@ -99,17 +135,15 @@ func check_answer() -> void:
 		jucator_reinviat.emit()
 	else:
 		# A greșit -> Game Over definitiv
-		question_label.text = "Greșit! Răspunsul era: " + correct_answer.capitalize() + "\nGAME OVER"
+		question_label.text = "Wrong! The correct answer was: " + correct_answer.capitalize() + "\nGAME OVER"
 		answer_input.hide()
 		submit_button.hide()
+		timer_bar.hide()
 		
-		# Așteptăm 2 secunde să vadă răspunsul corect, apoi terminăm jocul
 		await get_tree().create_timer(2.0).timeout
 		ascunde_tot()
 		get_tree().paused = false
 		joc_terminat_definitiv.emit()
-	var hbox := HBoxContainer.new()
-var dim: ColorRect   # fundalul întunecat din spatele meniului
 
 func stilizeaza_ui() -> void:
 	var bold_font := FontVariation.new()
@@ -123,7 +157,7 @@ func stilizeaza_ui() -> void:
 
 	# fundal întunecat, ca textul să se citească bine
 	dim = ColorRect.new()
-	dim.color = Color(0.03, 0.02, 0.08, 0.7)
+	dim.color = Color(0.03, 0.02, 0.08, 0.75)
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	layer.add_child(dim)
 
@@ -136,6 +170,18 @@ func stilizeaza_ui() -> void:
 	vbox.custom_minimum_size = Vector2(900, 0)
 	vbox.add_theme_constant_override("separation", 28)
 	center_box.add_child(vbox)
+
+	# --- bara de timp (10 secunde) ---
+	timer_bar = ProgressBar.new()
+	timer_bar.max_value = 10.0
+	timer_bar.value = 10.0
+	timer_bar.show_percentage = false
+	timer_bar.custom_minimum_size = Vector2(600, 18)
+	timer_bar.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var bar_fill := StyleBoxFlat.new()
+	bar_fill.bg_color = Color(0.2, 1.0, 0.8)
+	timer_bar.add_theme_stylebox_override("fill", bar_fill)
+	vbox.add_child(timer_bar)
 
 	# --- întrebarea ---
 	question_label.reparent(vbox)
