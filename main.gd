@@ -110,6 +110,7 @@ func creeaza_meniu_start() -> void:
 func _on_start_pressed() -> void:
 	start_layer.hide()
 	game_started = true
+	$MusicPlayer.play()  
 	restart()
 
 
@@ -307,9 +308,15 @@ func _draw() -> void:
 
 
 func play_sfx(node_name: String) -> void:
-	var player := get_node_or_null(node_name) as AudioStreamPlayer
-	if player and player.stream != null:
-		player.play()
+	var n = get_node_or_null(node_name)
+	if n == null:
+		print("SFX: nu gasesc nodul ", node_name)
+		return
+	if n.stream == null:
+		print("SFX: ", node_name, " nu are Stream setat")
+		return
+	print("SFX: pornesc ", node_name)
+	n.play()
 
 
 func save_high_score() -> void:

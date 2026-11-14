@@ -1,7 +1,11 @@
-[gd_scene format=3 uid="uid://8fb7l5em3ape"]
+[gd_scene format=3 uid="uid://dyiybs40aafok"]
 
 [ext_resource type="Script" path="res://main.gd" id="1"]
 [ext_resource type="Script" uid="uid://uy30va1bjk55" path="res://questions.gd" id="2_0xm2m"]
+[ext_resource type="AudioStream" uid="uid://dgakvhef787te" path="res://assets/serhii_kliets-spaceship-arcade-shooter-game-background-soundtrack-318508.mp3" id="3_h2yge"]
+[ext_resource type="AudioStream" uid="uid://de7we78xft16e" path="res://assets/laserSmall_000.ogg" id="4_7mycd"]
+[ext_resource type="AudioStream" uid="uid://jxr4c3pqqj3i" path="res://assets/impactMetal_000.ogg" id="5_272bh"]
+[ext_resource type="AudioStream" uid="uid://bxou7lrd42k0u" path="res://assets/universfield-level-up-191997.mp3" id="6_5vw27"]
 
 [node name="Main" type="Node2D" unique_id=1895281946]
 script = ExtResource("1")
@@ -45,3 +49,22 @@ offset_top = 410.0
 offset_right = 495.0
 offset_bottom = 441.0
 text = "Game Over"
+
+[node name="MusicPlayer" type="AudioStreamPlayer2D" parent="." unique_id=2121915642]
+process_mode = 3
+stream = ExtResource("3_h2yge")
+
+[node name="ParrySound" type="AudioStreamPlayer2D" parent="." unique_id=743908992]
+process_mode = 3
+stream = ExtResource("4_7mycd")
+volume_db = 10.206
+
+[node name="HitSound" type="AudioStreamPlayer2D" parent="." unique_id=125717736]
+process_mode = 3
+stream = ExtResource("5_272bh")
+volume_db = 17.009
+
+[node name="ReviveSound" type="AudioStreamPlayer2D" parent="." unique_id=606947009]
+process_mode = 3
+stream = ExtResource("6_5vw27")
+volume_db = 13.121

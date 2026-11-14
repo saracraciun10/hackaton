@@ -20,7 +20,42 @@ var questions = [
 	{"q": "Who was the first human to walk on the Moon?", "answer": "Neil Armstrong"},
 	{"q": "What is the name of Earth's natural satellite?", "answer": "Moon"},
 	{"q": "Which planet is known as the Ice Giant and is blue?", "answer": "Uranus"},
-	{"q": "How many planets are in our solar system?", "answer": "8"}
+	{"q": "How many planets are in our solar system?", "answer": "8"},
+		# --- SPACE & ASTRONOMY ---
+	{"q": "What was the name of the first dog sent to orbit the Earth?", "answer": "Laika"},
+	{"q": "What is the name of the space telescope launched in 1990 that orbits Earth?", "answer": "Hubble"},
+	{"q": "What is the largest moon of Saturn?", "answer": "Titan"},
+	{"q": "What is the largest moon of Jupiter?", "answer": "Ganymede"},
+	{"q": "What do we call a star that explodes at the end of its life?", "answer": "Supernova"},
+	{"q": "What do we call a giant ball of ice and dust with a glowing tail?", "answer": "Comet"},
+	{"q": "Which dwarf planet was once considered the ninth planet?", "answer": "Pluto"},
+	{"q": "Who was the first human in space? (last name only)", "answer": "Gagarin"},
+	{"q": "What is the name of the galaxy closest to the Milky Way, named after a princess from Greek myth?", "answer": "Andromeda"},
+	{"q": "Which NASA rover landed on Mars in 2021?", "answer": "Perseverance"},
+
+	# --- EARTH ---
+	{"q": "Which is the largest ocean on Earth?", "answer": "Pacific"},
+	{"q": "What is the highest mountain on Earth above sea level?", "answer": "Everest"},
+	{"q": "Which gas makes up most of Earth's atmosphere?", "answer": "Nitrogen"},
+	{"q": "What is the coldest continent on Earth?", "answer": "Antarctica"},
+	{"q": "What is the imaginary line that divides Earth into the northern and southern hemispheres?", "answer": "Equator"},
+	{"q": "What was the name of the supercontinent that existed millions of years ago?", "answer": "Pangaea"},
+	{"q": "What do we call the hot liquid rock that comes out of a volcano?", "answer": "Lava"},
+	{"q": "Which instrument is used to measure earthquakes?", "answer": "Seismograph"},
+	{"q": "What is the longest river in South America?", "answer": "Amazon"},
+	{"q": "How many days does Earth take to orbit the Sun? (approximately)", "answer": "365"},
+
+	# --- COMPUTER SCIENCE ---
+	{"q": "Which number system uses only 0 and 1?", "answer": "Binary"},
+	{"q": "How many bits are there in a byte?", "answer": "8"},
+	{"q": "Which programming language is named after a snake?", "answer": "Python"},
+	{"q": "What do we call a mistake in a computer program?", "answer": "Bug"},
+	{"q": "What do we call a step-by-step set of instructions used to solve a problem?", "answer": "Algorithm"},
+	{"q": "Which free operating system kernel was created by Linus Torvalds?", "answer": "Linux"},
+	{"q": "What is the name of the main circuit board inside a computer?", "answer": "Motherboard"},
+	{"q": "What do we call the physical parts of a computer? (one word)", "answer": "Hardware"},
+	{"q": "Who is considered the first computer programmer? (first name only)", "answer": "Ada"},
+	{"q": "What is the name of the game engine this game was made with?", "answer": "Godot"},
 ]
 
 var current_question = 0
