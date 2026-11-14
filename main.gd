@@ -25,9 +25,12 @@ var flash := 0.0
 
 var bg: Texture2D = preload("res://assets/background.png")
 var enemy_tex: Texture2D = preload("res://assets/enemy.png")
+
 func _ready() -> void:
 	randomize()
 	center = get_viewport_rect().size / 2.0
+	$QuizManager.jucator_reinviat.connect(_on_jucator_reinviat)
+	$QuizManager.joc_terminat_definitiv.connect(_on_game_over_final)
 
 
 func restart() -> void:
@@ -144,7 +147,7 @@ func player_hit() -> void:
 		e["dist"] += 140.0
 		e["stun"] = 1.5
 	if shield_arc < deg_to_rad(MIN_ARC):
-		game_over = true
+		$QuizManager.arata_optiune_bounce_back()
 
 
 func _draw() -> void:
@@ -168,15 +171,15 @@ func _draw() -> void:
 
 	# inamici (romburi magenta)
 	for e in enemies:
-			var p: Vector2 = center + Vector2.from_angle(e["angle"]) * e["dist"]
-			var tint := Color.WHITE
-			if e["stun"] > 0.0:
-				tint = Color(0.5, 0.5, 0.5)   # gri cand e amortit de unda de soc
-			# rotim nava cu fata spre jucator
-			var ang: float = (center - p).angle() - PI / 2.0
-			draw_set_transform(p, ang, Vector2(1.5,1.5))
-			draw_texture(enemy_tex, -enemy_tex.get_size() / 2.0, tint)
-			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)   # resetam, altfel se strica restul desenului
+		var p: Vector2 = center + Vector2.from_angle(e["angle"]) * e["dist"]
+		var tint := Color.WHITE
+		if e["stun"] > 0.0:
+			tint = Color(0.5, 0.5, 0.5)   # gri cand e amortit de unda de soc
+		# rotim nava cu fata spre jucator
+		var ang: float = (center - p).angle() - PI / 2.0
+		draw_set_transform(p, ang, Vector2(1.5, 1.5))
+		draw_texture(enemy_tex, -enemy_tex.get_size() / 2.0, tint)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)   # resetam, altfel se strica restul desenului
 
 	# proiectile
 	for b in bullets:
@@ -197,3 +200,22 @@ func _draw() -> void:
 		var sz: Vector2 = get_viewport_rect().size
 		draw_string(font, Vector2(0, sz.y / 2 - 20), "GAME OVER", HORIZONTAL_ALIGNMENT_CENTER, sz.x, 64, Color(1, 0.3, 0.3))
 		draw_string(font, Vector2(0, sz.y / 2 + 30), "Scor final: %d  -  apasa R pentru restart" % score, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 28, Color.WHITE)
+
+
+# --- FUNCTIILE DE LEGATURA CU QUIZMANAGER ---
+
+func _on_jucator_reinviat() -> void:
+	# Refacem scutul la 2 vieti (Bounce Back!)
+	shield_arc = deg_to_rad(MIN_ARC + 18.0)
+	
+	# Curatam proiectilele periculoase si impingem inamicii inapoi ca sa aiba timp sa reactioneze
+	bullets.clear()
+	shock_active = true
+	shock_r = PLAYER_R
+	for e in enemies:
+		e["dist"] = ENEMY_RING + 100.0
+		e["stun"] = 2.0
+
+
+func _on_game_over_final() -> void:
+	game_over = true
