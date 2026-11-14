@@ -28,7 +28,7 @@ var current_question = 0
 func _ready() -> void:
 	# IMPORTANT: Permite acestui meniu să funcționeze chiar și când jocul este pus pe pauză!
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	
+	stilizeaza_ui()  
 	submit_button.pressed.connect(check_answer)
 	answer_input.text_submitted.connect(_on_text_submitted)
 	revive_button.pressed.connect(_on_revive_pressed)
@@ -38,6 +38,8 @@ func _ready() -> void:
 	ascunde_tot()
 
 func ascunde_tot() -> void:
+	if dim:
+		dim.hide()
 	question_label.hide()
 	answer_input.hide()
 	submit_button.hide()
@@ -47,8 +49,8 @@ func ascunde_tot() -> void:
 # 1. Această funcție se apelează din main.gd când moare jucătorul
 func arata_optiune_bounce_back() -> void:
 	get_tree().paused = true # Punem inamicii pe pauză cât timp jucătorul alege
-	
-	question_label.text = "Scutul a fost distrus! Ce alegi?"
+	dim.show()
+	question_label.text = "The shield was destroyed. What do you choose?"
 	question_label.show()
 	revive_button.show()
 	game_over_button.show()
@@ -106,3 +108,74 @@ func check_answer() -> void:
 		ascunde_tot()
 		get_tree().paused = false
 		joc_terminat_definitiv.emit()
+	var hbox := HBoxContainer.new()
+var dim: ColorRect   # fundalul întunecat din spatele meniului
+
+func stilizeaza_ui() -> void:
+	var bold_font := FontVariation.new()
+	bold_font.base_font = ThemeDB.fallback_font
+	bold_font.variation_embolden = 0.8
+
+	# strat separat, deasupra jocului
+	var layer := CanvasLayer.new()
+	layer.layer = 10
+	add_child(layer)
+
+	# fundal întunecat, ca textul să se citească bine
+	dim = ColorRect.new()
+	dim.color = Color(0.03, 0.02, 0.08, 0.7)
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(dim)
+
+	# containerul care centrează tot ce e în el
+	var center_box := CenterContainer.new()
+	center_box.set_anchors_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(center_box)
+
+	var vbox := VBoxContainer.new()
+	vbox.custom_minimum_size = Vector2(900, 0)
+	vbox.add_theme_constant_override("separation", 28)
+	center_box.add_child(vbox)
+
+	# --- întrebarea ---
+	question_label.reparent(vbox)
+	question_label.add_theme_font_override("font", bold_font)
+	question_label.add_theme_font_size_override("font_size", 44)
+	question_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.75))
+	question_label.add_theme_color_override("font_outline_color", Color(0.05, 0.02, 0.1))
+	question_label.add_theme_constant_override("outline_size", 8)
+	question_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	# --- câmpul de răspuns ---
+	answer_input.reparent(vbox)
+	answer_input.add_theme_font_override("font", bold_font)
+	answer_input.add_theme_font_size_override("font_size", 34)
+	answer_input.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	answer_input.placeholder_text = "Type your answer..."
+	answer_input.custom_minimum_size = Vector2(600, 70)
+	answer_input.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+
+	# --- butonul Send ---
+	submit_button.reparent(vbox)
+	submit_button.text = "Send"
+	submit_button.custom_minimum_size = Vector2(300, 80)
+	submit_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+
+	# --- cele două butoane de alegere, unul lângă altul ---
+	var hbox := HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 40)
+	vbox.add_child(hbox)
+
+	revive_button.reparent(hbox)
+	revive_button.text = "Answer a question\nfor another life"
+	game_over_button.reparent(hbox)
+	game_over_button.text = "Give up"
+
+	revive_button.custom_minimum_size = Vector2(380, 100)
+	game_over_button.custom_minimum_size = Vector2(380, 100)
+
+	for b in [submit_button, revive_button, game_over_button]:
+		b.add_theme_font_override("font", bold_font)
+		b.add_theme_font_size_override("font_size", 32)

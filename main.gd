@@ -7,18 +7,27 @@ const SHIELD_R := 60.0
 const ENEMY_RING := 300.0
 const MAX_ARC := 100.0   # grade, scutul complet
 const MIN_ARC := 30.0    # sub asta = game over
-
+const COL_PLAYER := Color(1.0, 0.85, 0.5)
+const COL_PLAYER_GLOW := Color(1.0, 0.6, 0.2, 0.18)
+const COL_SHIELD := Color(1.0, 0.82, 0.45)
+const COL_SHIELD_GLOW := Color(1.0, 0.55, 0.15, 0.25)
+const COL_BULLET := Color(0.3, 0.75, 1.0)
+const COL_BULLET_OUTLINE := Color(0.02, 0.05, 0.2)
+const COL_LASER := Color(1.0, 0.96, 0.75)
+const COL_LASER_GLOW := Color(1.0, 0.6, 0.2, 0.4)
+const COL_SHOCK := Color(1.0, 0.6, 0.25, 0.7)
+const COL_UI := Color(1.0, 0.92, 0.75)
 var center := Vector2(640, 360)
 var shield_angle := 0.0
 var shield_arc := deg_to_rad(MAX_ARC)
-
+const COL_GAMEOVER := Color(1.0, 0.85, 0.3)
 var enemies: Array = []   # {angle, dist, base_dist, shoot_t, stun}
 var bullets: Array = []   # {pos, vel, reflected}
 var score := 0
 var game_over := false
 var spawn_t := 1.0
 var time_alive := 0.0
-
+var player_tex: Texture2D = preload("res://assets/player.png")
 var shock_active := false
 var shock_r := 0.0
 var flash := 0.0
@@ -153,26 +162,30 @@ func player_hit() -> void:
 func _draw() -> void:
 	draw_texture_rect(bg, Rect2(Vector2.ZERO, get_viewport_rect().size), false, Color(1, 1, 1, 0.5))
 	if flash > 0.0:
-		draw_rect(get_viewport_rect(), Color(1, 0.1, 0.1, flash * 0.25))
+		draw_rect(get_viewport_rect(), Color(1.0, 0.8, 0.3, flash * 0.25))
 
 	# unda de soc
 	if shock_active:
-		draw_arc(center, shock_r, 0, TAU, 96, Color(1, 0.5, 0.2, 0.7), 4.0)
+		draw_arc(center, shock_r, 0, TAU, 96, COL_SHOCK, 4.0)
 
 	# jucator
-	draw_circle(center, PLAYER_R + 6.0, Color(0.1, 0.9, 1.0, 0.15))
-	draw_circle(center, PLAYER_R, Color(0.2, 1.0, 1.0))
+	# jucator (nava)
+	draw_circle(center, PLAYER_R + 14.0, COL_PLAYER_GLOW)   # lumina din jurul navei (optional)
+	var ship_ang: float = shield_angle + PI / 2.0
+	draw_set_transform(center, ship_ang, Vector2(0.6, 0.6))
+	draw_texture(player_tex, -player_tex.get_size() / 2.0)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 	# scut (cu "glow")
 	var a0: float = shield_angle - shield_arc / 2.0
 	var a1: float = shield_angle + shield_arc / 2.0
-	draw_arc(center, SHIELD_R, a0, a1, 32, Color(0.0, 1.0, 1.0, 0.25), 16.0)
-	draw_arc(center, SHIELD_R, a0, a1, 32, Color(0.6, 1.0, 1.0), 5.0)
+	draw_arc(center, SHIELD_R, a0, a1, 32, COL_SHIELD_GLOW, 16.0)
+	draw_arc(center, SHIELD_R, a0, a1, 32,COL_SHIELD, 5.0)
 
 	# inamici (romburi magenta)
 	for e in enemies:
 		var p: Vector2 = center + Vector2.from_angle(e["angle"]) * e["dist"]
-		var tint := Color.WHITE
+		var tint := Color(1.0, 0.8, 0.6)
 		if e["stun"] > 0.0:
 			tint = Color(0.5, 0.5, 0.5)   # gri cand e amortit de unda de soc
 		# rotim nava cu fata spre jucator
@@ -185,21 +198,24 @@ func _draw() -> void:
 	for b in bullets:
 		if b["reflected"]:
 			var tail: Vector2 = b["pos"] - b["vel"].normalized() * 60.0
-			draw_line(tail, b["pos"], Color(1, 1, 0.4, 0.4), 12.0)
-			draw_line(tail, b["pos"], Color(1, 1, 1), 5.0)
+			draw_line(tail, b["pos"], COL_LASER_GLOW, 12.0)
+			draw_line(tail, b["pos"], COL_LASER, 5.0)
 		else:
-			draw_circle(b["pos"], 7.0, Color(1.0, 0.5, 0.2))
+			draw_circle(b["pos"], 11.0, Color(0.3, 0.75, 1.0, 0.25))   # glow
+			draw_circle(b["pos"], 9.0, COL_BULLET_OUTLINE)
+			draw_circle(b["pos"], 7.0, COL_BULLET)
+			draw_circle(b["pos"], 3.0, Color(0.9, 1.0, 1.0))           # miez luminos
 
 	# interfata
 	var font: Font = ThemeDB.fallback_font
-	draw_string(font, Vector2(20, 36), "Scor: %d" % score, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color.WHITE)
+	draw_string(font, Vector2(20, 36), "Score: %d" % score, HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color.WHITE)
 	var lives: int = int((rad_to_deg(shield_arc) - MIN_ARC) / 18.0) + 1
-	draw_string(font, Vector2(20, 70), "Scut: " + "■ ".repeat(maxi(lives, 0)), HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(0.5, 1, 1))
+	draw_string(font, Vector2(20, 70), "Shield: " + "■ ".repeat(maxi(lives, 0)), HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(0.5, 1, 1))
 
 	if game_over:
 		var sz: Vector2 = get_viewport_rect().size
-		draw_string(font, Vector2(0, sz.y / 2 - 20), "GAME OVER", HORIZONTAL_ALIGNMENT_CENTER, sz.x, 64, Color(1, 0.3, 0.3))
-		draw_string(font, Vector2(0, sz.y / 2 + 30), "Scor final: %d  -  apasa R pentru restart" % score, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 28, Color.WHITE)
+		draw_string(font, Vector2(0, sz.y / 2 - 20), "GAME OVER", HORIZONTAL_ALIGNMENT_CENTER, sz.x, 64, COL_GAMEOVER)
+		draw_string(font, Vector2(0, sz.y / 2 + 30), "Final score: %d  -  Press R to restart" % score, HORIZONTAL_ALIGNMENT_CENTER, sz.x, 28, Color.WHITE)
 
 
 # --- FUNCTIILE DE LEGATURA CU QUIZMANAGER ---
